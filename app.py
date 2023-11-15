@@ -237,7 +237,6 @@ with tab1:
 with tab2:
     date_start = (datetime.today()-timedelta(days=st.session_state['ndays'])).date()
     df = getData(code, date_start, datetime.today().date())
-
     df['HighestPrice'] = df['High'].rolling(window=10).max().shift(1)
     df['LowestPrice'] = df['Low'].rolling(window=10).min().shift(1)
     df['CandleSize'] = abs(df['Open'] - df['Close'])
@@ -246,11 +245,12 @@ with tab2:
     df['BuyCondition2'] = df['CandleSize'] > df['MaxCandleSize']
     df['SellCondition1'] = df['Close'] < df['LowestPrice']
     df['Signal'] =  df['BuyCondition1'] & df['BuyCondition2']
-    df = df[['Open', 'High', 'Low', 'Close', 'Volume', 'HighestPrice', 'LowestPrice' ,'BuyCondition1' ,'SellCondition1' , 'Signal']]
-    df_sub = df[['HighestPrice', 'LowestPrice' ,'BuyCondition1' ,'SellCondition1' , 'Signal']]
+    df['Volume_Signal'] = df['Volume'].iloc[-2] * 2 < df['Volume'].iloc[-1]
+    df = df[['Open', 'High', 'Low', 'Close', 'Volume', 'HighestPrice', 'LowestPrice' ,'BuyCondition1' ,'SellCondition1' , 'Signal' ,'Volume_Signal']]
+    df_sub = df[['HighestPrice', 'LowestPrice' ,'BuyCondition1' ,'SellCondition1' , 'Signal', 'Volume_Signal']]
     st.subheader('신호 데이터')
 
-    st.table(df_sub[(df['BuyCondition1'] == True) | (df['Signal'] == True) | (df['SellCondition1'] == True)])
+    st.dataframe(df_sub[(df['BuyCondition1'] == True) | (df['Signal'] == True) | (df['SellCondition1'] == True)])
 
     st.subheader('ES 예측치')
 
