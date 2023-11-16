@@ -12,6 +12,8 @@
 # pip install scikit-learn
 
 # 필요한 라이브러리를 불러온다.
+
+import telegram
 import streamlit as st
 import FinanceDataReader as fdr
 import mplfinance as mpf
@@ -23,6 +25,10 @@ from datetime import datetime, timedelta
 from statsmodels.tsa.holtwinters import ExponentialSmoothing   # Holt Winters 지수평활화 모형.
 from sklearn.linear_model import LinearRegression              # 선형회귀 모형.
 warnings.filterwarnings("ignore")                              # 성가신 warning을 꺼준다.
+
+BOT_TOKEN = '6973968303:AAHpIBTUwqtAtQSfLKhym9hGeRULd6oyi-A'
+
+bot = telegram.Bot(token = BOT_TOKEN)
 
 # 지수평활화(ES) 예측을 추가해 주는 함수.
 def ESPrediction(data, pred_ndays):
@@ -116,7 +122,7 @@ def loadJSON(path):
     f.close()
     return res
 
-tab1, tab2, tab3 = st.tabs(['차트', '데이터', '계산기'])
+tab1, tab2, tab3, tab4 = st.tabs(['차트', '데이터', '계산기', '국내 주식 종목 수집'])
 
 with tab1:
     # 로고 Lottie와 타이틀 출력.
@@ -283,3 +289,98 @@ with tab3:
     if cal:
         result = float(loss_cut_amount) // (float(buy_price) - float(loss_cut_price))
         st.info(f'{result:.0f}주 구매')
+
+with tab4:
+
+    st.write('\n')
+    st.write('\n')
+
+    start = st.button("종목 수집 시작하기")
+
+    st.write('\n')
+    st.write('\n')
+
+    progress_text = "Operation in progress. Please wait."
+
+    kospi_bar = st.progress(0, text = progress_text)
+
+    st.write('\n')
+
+    kosdaq_bar = st.progress(0, text = progress_text)
+    
+    st.write('\n')
+
+    successed = st.text('')
+
+    if start:
+        
+        successed = st.text('')
+
+        df_kospi = fdr.StockListing('KOSPI')
+
+        df_kosdaq = fdr.StockListing('KOSDAQ')
+
+        kospi_list = df_kospi[['Code', 'Name']].values.tolist()
+
+        kosdaq_list = df_kosdaq[['Code', 'Name']].values.tolist()
+
+        daily_interest = []
+
+        bot.sendMessage(-1002074401247, '종목 수집 시작!!')
+
+        for i, kospi in enumerate(kospi_list):
+            kospi_bar.progress(i / len(kospi_list), text = 'KOSPI 종목 수집 중...')
+
+            df = fdr.DataReader(kospi[0])
+            df['Market'] = 'KOSPI'
+            df['Code'] = kospi[0]
+            df['Name'] = kospi[1]
+
+            df['HighestPrice'] = df['High'].rolling(window=10).max().shift(1)
+            df['LowestPrice'] = df['Low'].rolling(window=10).min().shift(1)
+            df['CandleSize'] = abs(df['Open'] - df['Close'])
+            df['MaxCandleSize'] = df['CandleSize'].rolling(window=10).max().shift(1)
+            df['BuyCondition1'] = df['Close'] > df['HighestPrice']
+            df['BuyCondition2'] = df['CandleSize'] > df['MaxCandleSize']
+            df['Signal'] =  df['BuyCondition1'] & df['BuyCondition2']
+            df = df[['Market', 'Name', 'Code', 'Open', 'High', 'Low', 'Close', 'Volume', 'Change', 'HighestPrice', 'LowestPrice' ,'Signal']]
+
+            # print(df)
+            if df.iloc[-1]['Signal'] == True:
+                increase_rate = (df.iloc[-1]['Close'] - df.iloc[-1]['Open']) / df.iloc[-1]['Open'] * 100
+                daily_interest.append(f"{df.iloc[-1]['Code']} / {df.iloc[-1]['Name']} / {increase_rate:.2f}%")
+
+        kospi_bar.progress(100, text = 'KOSPI 종목 수집 완료')
+
+        for i, kosdaq in enumerate(kosdaq_list):
+            kosdaq_bar.progress(i / len(kosdaq_list), text = 'KOSDAQ 종목 수집 중...')
+            df = fdr.DataReader(kosdaq[0])
+            df['Market'] = 'KOSDAQ'
+            df['Code'] = kosdaq[0]
+            df['Name'] = kosdaq[1]
+
+            df['HighestPrice'] = df['High'].rolling(window=10).max().shift(1)
+            df['LowestPrice'] = df['Low'].rolling(window=10).min().shift(1)
+            df['CandleSize'] = abs(df['Open'] - df['Close'])
+            df['MaxCandleSize'] = df['CandleSize'].rolling(window=10).max().shift(1)
+            df['BuyCondition1'] = df['Close'] > df['HighestPrice']
+            df['BuyCondition2'] = df['CandleSize'] > df['MaxCandleSize']
+            df['Signal'] =  df['BuyCondition1'] & df['BuyCondition2']
+            df = df[['Market', 'Name', 'Code', 'Open', 'High', 'Low', 'Close', 'Volume', 'Change', 'HighestPrice', 'LowestPrice' ,'Signal']]
+
+            # print(df)
+            if df.iloc[-1]['Signal'] == True:
+                increase_rate = (df.iloc[-1]['Close'] - df.iloc[-1]['Open']) / df.iloc[-1]['Open'] * 100
+                daily_interest.append(f"{df.iloc[-1]['Code']} / {df.iloc[-1]['Name']} / {increase_rate:.2f}%")
+
+        kosdaq_bar.progress(100, text = 'KOSDAQ 종목 수집 완료')
+
+        kospi = (fdr.DataReader('KS11').iloc[-1]['Close']  - fdr.DataReader('KS11').iloc[-1]['Open']) / fdr.DataReader('KS11').iloc[-1]['Open'] * 100
+        kosdaq = (fdr.DataReader('KQ11').iloc[-1]['Close']  - fdr.DataReader('KQ11').iloc[-1]['Open']) / fdr.DataReader('KQ11').iloc[-1]['Open'] * 100
+        data = f'KOSPI : {kospi:.2f}%\n'
+        data += f'KOSDAQ : {kosdaq:.2f}%\n\n'
+        data += f"{datetime.today().strftime('%Y-%m-%d')} 관심종목 리스트 \n\n" + '\n'.join(daily_interest)
+
+        bot.sendMessage(-1002074401247, data)
+
+        successed = st.text(f"종목 수집 완료\n\n\n {data}")
