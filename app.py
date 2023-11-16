@@ -53,11 +53,11 @@ def ARPrediction(data, pred_ndays):
     df['m3'] = df['Close'].shift(3)                    # t-3 값.
     df['m4'] = df['Close'].shift(4)                    # t-4 값.
     df['m5'] = df['Close'].shift(5)                    # t-5 값. 
-    df['m6'] = df['Close'].shift(5)
-    df['m7'] = df['Close'].shift(5)
-    df['m8'] = df['Close'].shift(5)
-    df['m9'] = df['Close'].shift(5)
-    df['m10'] = df['Close'].shift(5)    
+    df['m6'] = df['Close'].shift(6)
+    df['m7'] = df['Close'].shift(7)
+    df['m8'] = df['Close'].shift(8)
+    df['m9'] = df['Close'].shift(9)
+    df['m10'] = df['Close'].shift(10)    
     df = df.iloc[10:]
 # 선형회귀 기반  AR(5)모형 학습.
     model = LinearRegression()
@@ -95,11 +95,11 @@ def addARPrediction(data, ax, pred_ndays):
     df['m3'] = df['Close'].shift(3)                    # t-3 값.
     df['m4'] = df['Close'].shift(4)                    # t-4 값.
     df['m5'] = df['Close'].shift(5)                    # t-5 값. 
-    df['m6'] = df['Close'].shift(5)
-    df['m7'] = df['Close'].shift(5)
-    df['m8'] = df['Close'].shift(5)
-    df['m9'] = df['Close'].shift(5)
-    df['m10'] = df['Close'].shift(5)    
+    df['m6'] = df['Close'].shift(6)
+    df['m7'] = df['Close'].shift(7)
+    df['m8'] = df['Close'].shift(8)
+    df['m9'] = df['Close'].shift(9)
+    df['m10'] = df['Close'].shift(10)    
     df = df.iloc[10:]
 # 선형회귀 기반  AR(5)모형 학습.
     model = LinearRegression()
@@ -111,7 +111,7 @@ def addARPrediction(data, ax, pred_ndays):
         predicted = model.predict(past)[0]                                        # 예측 결과는 원소가 1개인 데이터프레임.
         ser = pd.concat( [ser, pd.Series({n + step:predicted}) ])
     
-    ax.plot(ser[9:], color = 'red', linestyle ='--', linewidth=1.5, label = 'AR(10)')
+    ax.plot(ser[9:], color = 'red', linestyle ='--', linewidth=1.5, label = 'AR')
     ax.legend(loc='best')    
 
 
