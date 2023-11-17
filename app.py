@@ -291,30 +291,7 @@ with tab3:
         st.info(f'{result:.0f}주 구매')
 
 with tab4:
-
-    st.write('\n')
-    st.write('\n')
-
-    start = st.button("종목 수집 시작하기")
-
-    st.write('\n')
-    st.write('\n')
-
-    progress_text = "Operation in progress. Please wait."
-
-    kospi_bar = st.progress(0, text = progress_text)
-
-    st.write('\n')
-
-    kosdaq_bar = st.progress(0, text = progress_text)
-    
-    st.write('\n')
-
-    successed = st.text('')
-
-    if start:
-        
-        successed = st.text('')
+    def crawler(*args):
 
         df_kospi = fdr.StockListing('KOSPI')
 
@@ -383,4 +360,11 @@ with tab4:
 
         bot.sendMessage(-1002074401247, data)
 
-        successed = st.text(f"종목 수집 완료\n\n\n {data}")
+    st.write('\n')
+    st.write('\n')
+
+    start = st.button("종목 수집 시작하기", on_click = crawler)
+    
+    kospi_bar = st.progress(0, text = 'KOSPI 종목 수집 전...')
+
+    kosdaq_bar = st.progress(0, text = 'KOSDAQ 종목 수집 전...')
