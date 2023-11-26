@@ -162,7 +162,7 @@ with tab1:
         st.session_state['volume'] = True
 
     if 'pred_ndays' not in st.session_state:
-        st.session_state['pred_ndays'] = 5
+        st.session_state['pred_ndays'] = 10
 
     # 사이드바에서 폼을 통해서 차트 인자를 설정한다.
     with st.sidebar.form(key="chartsetting", clear_on_submit=True):
