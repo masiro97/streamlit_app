@@ -156,7 +156,7 @@ with tab1:
         st.session_state['code_index'] = 0
 
     if 'chart_style' not in st.session_state:
-        st.session_state['chart_style'] = 'default'
+        st.session_state['chart_style'] = 'binance'
 
     if 'volume' not in st.session_state:
         st.session_state['volume'] = True
