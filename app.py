@@ -142,7 +142,7 @@ with tab1:
         return df
 
     @st.cache_data
-    def getSymbols(market='KOSPI', sort='Marcap'):
+    def getSymbols(market='KRX', sort='Marcap'):
         df = fdr.StockListing(market)
         ascending = False if sort == 'Marcap' else True
         df.sort_values(by=[sort], ascending= ascending, inplace=True)
