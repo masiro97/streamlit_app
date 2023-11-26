@@ -150,7 +150,7 @@ with tab1:
 
     # 세션 상태를 초기화 한다.
     if 'ndays' not in st.session_state:
-        st.session_state['ndays'] = 120
+        st.session_state['ndays'] = 365
 
     if 'code_index' not in st.session_state:
         st.session_state['code_index'] = 0
